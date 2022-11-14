@@ -1,0 +1,188 @@
+dev.off()
+rm(list=ls())
+
+library(ggplot2)
+library(ggthemes)
+library(skimr)
+library(showtext)
+showtext_auto()
+
+
+HR = read.csv('D:/Non_Documents/AI/R/data/HR_comma_sep.csv') 
+glimpse(HR)
+skim(HR)
+
+HR$left = as.factor(HR$left)
+HR$salary = factor(HR$salary,levels = c("low","medium","high"))
+
+# Classic Theme
+ggplot(HR,aes(x=salary)) +  
+  geom_bar(aes(fill=salary)) +
+  theme_classic()
+
+# BW Theme
+
+ggplot(HR,aes(x=salary)) +  
+  geom_bar(aes(fill=salary)) +
+  theme_bw()
+
+
+
+STOCK = read.csv("D:/Non_Documents/AI/R/data/Uniqlo_stocks2012-2016.csv")
+
+STOCK$Date = as.Date(STOCK$Date)
+STOCK$Year = as.factor(format(STOCK$Date,"%Y"))
+STOCK$Day = as.factor(format(STOCK$Date,"%a"))
+STOCK$Day = factor(STOCK$Day,levels = c("월","화","수", "목", "금"))
+
+
+str(STOCK)
+
+
+ggplot(STOCK) +
+  geom_histogram(aes(x = High , fill = ..x.. ), 
+                 binwidth = 1000) +
+  scale_fill_gradient(low = "#CCE5FF", high =  "#FF00FF") +
+  theme_classic() + labs(fill = "Labels Name") 
+
+ggplot(STOCK) +
+  geom_histogram(aes(x = High , fill = Day ), 
+                 binwidth = 1000, alpha = 0.4) + 
+  theme_classic() + labs(fill = "Labels Name")
+
+
+ggplot(STOCK) +
+  geom_histogram(aes(x = High , fill = Day ), 
+                 binwidth = 1000, alpha = 0.4, position = "dodge") + 
+  theme_classic() + labs(fill = "Labels Name")
+
+
+
+ggplot(STOCK) +
+  geom_density(aes(x = High)) +
+  theme_classic() + labs(fill = "Labels Name") 
+
+
+
+ggplot(STOCK) +
+  geom_density(aes(x = High , fill = Day ),alpha = 0.4) + 
+  theme_classic() + labs(fill = "Labels Name") +
+  theme(axis.text.x = element_text(size = 9, angle = 45,
+                                   hjust = 1))
+
+
+ggplot(STOCK) +
+  geom_boxplot(aes(x = Day, y = Volume, fill = Day),
+               alpha = 0.4, outlier.color = 'red') +
+  theme_bw()
+
+
+
+ggplot(STOCK) +
+  geom_boxplot(aes(x = Day, y = Volume, fill = Day),
+               alpha = 0.2, outlier.color = 'red') +
+  geom_jitter(aes(x= Day, y= Volume,col = Day),alpha = 0.1) +
+  theme_bw()
+
+
+ggplot(STOCK) +
+  geom_violin(aes(x = Day, y = Volume, fill = Day),
+              alpha = 0.4) +
+  theme_bw()
+
+
+ggplot(STOCK) +
+  geom_point(aes(x = Open, y = Stock.Trading,
+                 col = High, size = log(Volume), shape = Year)) +
+  scale_color_gradient(low = "#CCE5FF", high =  "#FF00FF") +
+  scale_shape_manual(values = c(19,20,21,22,23)) +
+  labs(
+    col = "Color", shape = "Shape", size = "Size"
+  ) +
+  theme_bw() +
+  theme(axis.text.x = element_blank())
+
+
+ggplot(STOCK) +
+  geom_smooth(aes(x = Open, y = Stock.Trading),
+              method = 'lm',
+              col = '#8A8585') +
+  theme_bw() 
+
+ggplot(STOCK) +
+  geom_point(aes(x = Open, y = Stock.Trading, ),col = 'royalblue', alpha = 0.2) +
+  geom_smooth(aes(x = Open, y = Stock.Trading),
+              method = 'lm',
+              col = '#8A8585') +
+  theme_bw() 
+
+
+ggplot(STOCK) +
+  geom_point(aes(x= log(Stock.Trading), y = Open, col = Open)) +
+  geom_density2d(aes(x= log(Stock.Trading), y = Open)) +
+  scale_color_gradient(low = "#E93061", high = "#574449") +
+  theme_bw()
+
+
+SL = sample(1:nrow(STOCK), 200, replace = FALSE)
+
+ggplot(STOCK[SL,]) +
+  geom_text(aes(x = Date , y= Open, label = Open,
+                col = Open), size = 2) +
+  scale_color_gradient(low = "#CCE5FF", high = "#0080FF") +
+  theme_bw() 
+
+ggplot(STOCK) +
+  geom_line(aes(x = Date, y = Open), group = 1) +
+  theme_bw()
+
+ggplot(STOCK) +
+  geom_line(aes(x = Date, y = Open,
+                col = Year, group = Year)) +
+  theme_bw()
+
+
+DF = STOCK %>%
+  group_by(Year) %>%
+  summarise(Min = min(High),
+            Max = max(High))
+
+ggplot(NULL) + 
+  geom_boxplot(data = STOCK, aes(x = Year, y = High, fill = Year)) +
+  geom_errorbar(data = DF, aes(x = Year, ymin = Min, ymax = Max)) +
+  theme_classic()
+
+ggplot(STOCK) +
+  geom_ribbon(aes(x= Date, ymin = log(Low) - 0.5, ymax = log(High) + 0.5),fill = 'royalblue' , alpha = 0.2) +
+  theme_classic()
+
+ggplot(STOCK) +
+  geom_ribbon(aes(x= Date, ymin = log(Low) - 0.5, ymax = log(High) + 0.5),fill = 'royalblue' , alpha = 0.2) +
+  geom_point(aes(x= Date, y = log(Low) - 0.5), col = '#8A8585', alpha = 0.8)  + 
+  geom_point(aes(x= Date, y = log(High) + 0.5), col = '#8A8585', alpha = 0.8) +
+  geom_line(aes(x = Date, y = log(Open)),group =1 , col = '#C2DAEF' ,  linetype = 'dashed', size  = 0.1) +
+  geom_point(aes(x = Date, y = log(Open)),col = 'red', alpha = 0.4) +
+  theme_classic() +
+  ylab("") + xlab("")
+
+
+library(ggridges)
+
+ggplot(STOCK) +
+  geom_density_ridges_gradient(aes(x = log(High) + 0.2 , y= Year, fill = ..x..),gradient_lwd = 1.) +
+  theme_ridges(grid = FALSE) +
+  scale_fill_gradient(low= "#8A8585", high= "#C2DAEF") +
+  theme(legend.position='none') + xlab("") + ylab("")
+
+
+## 산점도. 영역 표시 그래프
+ggplot(STOCK) +
+  stat_ellipse(geom = 'polygon',
+               aes(x = Volume, y = Stock.Trading, fill = Year), alpha = 0.2) +
+  geom_point(aes(x = Volume, y = Stock.Trading, col = Year),
+             alpha = 0.2) +
+  theme_classic()  +
+  # 그래프 가시성을 위해 축 범위 조절
+  xlim(0,1000000) + ylim(0,50000000000)
++
+  theme(axis.text.x = element_blank())
